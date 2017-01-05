@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 __author__ = 'liuqin'
 
-import urllib2
+import urllib.request
 import re
 import threading
-from multiprocessing import Process, Semaphore, Lock, Queue
+import queue
 
 IDdict = {}
 #百度贴吧爬取用户ID，以minecraft吧为例
@@ -21,10 +21,9 @@ class BaiDuTieBa():
 
     def getHTML(self):
         url = self.baseurl + 'kw=' + self.kw + '&' + 'pn=' + str(self.pn)
-        request = urllib2.Request(url, headers=self.headers)
-        response = urllib2.urlopen(request)
+        request = urllib.request.urlopen(url)
         # 注意这里网页源码编码是：GBK，用decode解码时要选择gbk
-        pageHTML = response.read().decode('gbk')
+        pageHTML = request.read().decode('gbk')
         return pageHTML
 
     def getUserID(self):
@@ -43,13 +42,16 @@ class BaiDuTieBa():
     def start(self):
         self.getUserID()
         self.writeIDinDict()
-        print u'写入第%d页用户ID' % (self.pn)
+        print(u'写入第%d页用户ID' % (self.pn))
 
 
 def writeInFile():
+    file = open(u'./百度贴吧minecraft吧用户ID.txt', 'a+', encoding='UTF-8')
+    # print(file.encoding)
     for i in IDdict:
-        file = open(u'./百度贴吧minecraft吧用户ID.txt', 'a+')
-        file.writelines(str(IDdict[i].encode('utf-8')) + '\n')
+        file.write(IDdict[i]+'\n')
+    file.close()
+
 
 #具体要做的任务
 def do_job(kw, pn):
@@ -86,7 +88,7 @@ def MultiThreads(kw, pn):
 # 用线程池和任务队列
 class WorkManager(object):# 这是一个线程管理器
     def __init__(self, kw, work_num, thread_num):
-        self.task_queue = Queue.Queue()
+        self.task_queue = queue.Queue()
         self.threads = []
         self.kw = kw
         self.__init_task_queue(work_num)
@@ -118,17 +120,15 @@ class WorkManager(object):# 这是一个线程管理器
     """
     def start_task(self):
         for i in self.threads:
+            i.setDaemon(1)
             i.start()
 
     """
         等待所有线程运行完毕
     """
     def wait_allcomplete(self):
-
-            for item in self.threads:
-                # if self.task_queue.empty():
-                #     return
-                if item.isAlive():item.join()
+        for item in self.threads:
+            item.join(1)
 
 class Work(threading.Thread):# 这是线程类
 
@@ -144,17 +144,17 @@ class Work(threading.Thread):# 这是线程类
 
 if __name__ == '__main__':
     kw = 'minecraft'  # 贴吧名称
-    pn = 500 # 页面数
+    pn = 1000 # 页面数
     # 不用多线程模式
-    NoThreads(kw, pn)
+    # NoThreads(kw, pn)
 
     # 即时创建即时销毁，多线程模式
     # MultiThreads(kw, pn)
 
     # 任务队列线程池模式：（任务数：100，线程：10）
-    # threads_num = 50
-    # work_manager =  WorkManager(kw, pn, threads_num)
-    # work_manager.wait_allcomplete()
+    threads_num = 100
+    work_manager =  WorkManager(kw, pn, threads_num)
+    work_manager.wait_allcomplete()
 
-    print "hello world"
+    print("hello world")
     writeInFile()
