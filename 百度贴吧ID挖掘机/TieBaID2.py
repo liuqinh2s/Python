@@ -156,7 +156,7 @@ if __name__ == '__main__':
     # 即时创建即时销毁，多线程模式
     # MultiThreads(kw, pn)
 
-    # 任务队列线程池模式：（任务数：100，线程：10）
+    # 任务队列线程池模式：（任务数：100，线程：100）
     threads_num = 100
     work_manager =  WorkManager(kw, pn, threads_num)
     work_manager.wait_allcomplete()
