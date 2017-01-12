@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # coding=utf-8
 
+'''
+    这是python3版本的，看文件名，TieBaID3.py，这个3啊就是python3，懂了伐。
+'''
+
 __author__ = 'liuqin'
 
 import urllib.request

@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-'a reptile module'
+'a spider for 嗅事百科'
 
 __author__ = 'liuqin'
 
-import urllib
-import urllib2
+import urllib.request
+import urllib.response
 import re
 
-#糗事百科爬虫类
+# 糗事百科爬虫类
 class QSBK:
-
 
     def __init__(self):
         self.pageIndex = 1
@@ -23,23 +22,17 @@ class QSBK:
         self.enable = False
 
     def getpage(self, pageIndex):
-        try:
-            url = 'http://www.qiushibaike.com/hot/page/' + str(pageIndex)
-            request = urllib2.Request(url, headers=self.headers)
-            #用urlopen()获取页面源码
-            response = urllib2.urlopen(request)
-            #用decode()转码
-            pageCode = response.read().decode('utf-8')
-            return pageCode
-        except urllib2.URLError, e:
-            if hasattr(e, 'reason'):
-                print "链接糗事百科失败，错误原因：", e.reason
-                return None
+        url = 'http://www.qiushibaike.com/hot/page/' + str(pageIndex)
+        #用urlopen()获取页面源码
+        request = urllib.request.urlopen(url)
+        #用decode()转码
+        pageCode = request.read().decode('utf-8')
+        return pageCode
 
     def getPageItem(self, pageIndex):
         pageCode = self.getpage(pageIndex)
         if not pageCode :
-            print "页面加载失败。。。"
+            print("页面加载失败。。。")
             return None
         pattern = re.compile('author.*?alt="(.*?)".*?content">.*?<span>(.*?)</span>(.*?)number">(.*?)<.*?>', re.S)
         items = re.findall(pattern, pageCode)
@@ -77,18 +70,18 @@ class QSBK:
         # 遍历一页段子
         for story in pageStories:
             # 等待输入回车
-            input = raw_input()
+            input = input()
             # 每次输入回车，先判断是否需要加载页面
             self.loadPage()
             # 如果输入Q，则结束程序
             if input == 'Q':
                 self.enable = False
                 return
-            print u"第%d页\t发布人:%s\t赞:%s\n%s" %(page,story[0],story[2],story[1])
+            print(u"第%d页\t发布人:%s\t赞:%s\n%s" %(page,story[0],story[2],story[1]))
 
     # 开始方法
     def start(self):
-        print u"正在读取糗事百科，回车查看新段子，输入Q退出程序"
+        print(u"正在读取糗事百科，回车查看新段子，输入Q退出程序")
         # enable变为True，程序可正常运行
         self.enable = True
         # 先加载一页
